@@ -1,8 +1,11 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.*;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkLowLevel.*;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -16,8 +19,10 @@ import frc.robot.sensors.ThriftyEncoder;
 
 public class SwerveModule {
 
-    private final CANSparkMax driveMotor;
-    private final CANSparkMax turningMotor;
+    // private final SparkMax driveMotor;
+    private SparkMax driveMotor;
+    // private final SparkMax turningMotor;
+    private SparkMax turningMotor;
 
     private final RelativeEncoder driveEncoder;
     private final RelativeEncoder turningEncoder;
@@ -40,41 +45,42 @@ public class SwerveModule {
                 
         this.absoluteEncoderOffsetRad = absoluteEncoderOffset;
         this.absoluteEncoderReversed = absoluteEncoderReversed;
-        //absoluteEncoder = new CANCoder(absoluteEncoderId);
         absoluteEncoder = new ThriftyEncoder(absoluteEncoderId);
 
         // driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-        driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
+        SparkMax driveMotor = new SparkMax(driveMotorId, MotorType.kBrushless);
+        driveMotor.close();
         
-        turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+        // turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
+        SparkMax turningMotor = new SparkMax(turningMotorId, MotorType.kBrushless);
+        turningMotor.close();
 
-        driveMotor.restoreFactoryDefaults();
-        turningMotor.restoreFactoryDefaults();
+        // driveMotor.restoreFactoryDefaults();
 
-        // driveMotor.setIdleMode(IdleMode.kCoast);
-        driveMotor.setIdleMode(IdleMode.kBrake);
-        //Used to be kBrake
+        SparkMaxConfig driveConfig = new SparkMaxConfig();
+        driveConfig
+                .inverted(driveMotorReversed)
+                .idleMode(IdleMode.kBrake) // Used to be kCoast
+                // Sets the ramp rate for the drive and turning motors
+                // Controls how fast you can accelerate when using onboard PID (Not currently used in tuning)
+                .closedLoopRampRate(0.5); // 0.15
+        driveConfig.encoder
+                .positionConversionFactor(ModuleConstants.kDriveEncoderRot2Meter)
+                .velocityConversionFactor(ModuleConstants.kDriveEncoderRPM2MeterPerSec);
+        driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        turningMotor.setIdleMode(IdleMode.kBrake);
-        //Used to be kCoast
-        
-
-        // Sets the ramp rate for the drive and turning motors
-        // Controls how fast you can accelerate when using onboard PID (Not currently used in tuning)
-        driveMotor.setClosedLoopRampRate(0.5); //0.15
-        turningMotor.setClosedLoopRampRate(0.15); //0.08
-
-
-        driveMotor.setInverted(driveMotorReversed);
-        turningMotor.setInverted(turningMotorReversed);
+        SparkMaxConfig turningConfig = new SparkMaxConfig();
+        turningConfig
+                .inverted(turningMotorReversed)
+                .idleMode(IdleMode.kBrake) // Used to be kCoast
+                .closedLoopRampRate(0.15); // 0.08
+        turningConfig.encoder
+                .positionConversionFactor(ModuleConstants.kTurningEncoderRot2Rad)
+                .velocityConversionFactor(ModuleConstants.kTurningEncoderRPM2RadPerSec);
+        turningMotor.configure(turningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         driveEncoder = driveMotor.getEncoder();
         turningEncoder = turningMotor.getEncoder();
-
-        driveEncoder.setPositionConversionFactor(ModuleConstants.kDriveEncoderRot2Meter);
-        driveEncoder.setVelocityConversionFactor(ModuleConstants.kDriveEncoderRPM2MeterPerSec);
-        turningEncoder.setPositionConversionFactor(ModuleConstants.kTurningEncoderRot2Rad);
-        turningEncoder.setVelocityConversionFactor(ModuleConstants.kTurningEncoderRPM2RadPerSec);
 
         turningPidController = new PIDController(ModuleConstants.kPTurning, 1, 0.001);
         turningPidController.enableContinuousInput(-Math.PI, Math.PI);
@@ -101,8 +107,6 @@ public class SwerveModule {
     public double getTurningVelocity() {
         return turningEncoder.getVelocity();
     }
-
-    
 
     public double getAbsoluteEncoderRad() {
         double angle = absoluteEncoder.getPosition();
