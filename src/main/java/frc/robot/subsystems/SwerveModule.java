@@ -19,10 +19,8 @@ import frc.robot.sensors.ThriftyEncoder;
 
 public class SwerveModule {
 
-    // private final SparkMax driveMotor;
-    private SparkMax driveMotor;
-    // private final SparkMax turningMotor;
-    private SparkMax turningMotor;
+    private final SparkMax driveMotor;
+    private final SparkMax turningMotor;
 
     private final RelativeEncoder driveEncoder;
     private final RelativeEncoder turningEncoder;
@@ -48,12 +46,10 @@ public class SwerveModule {
         absoluteEncoder = new ThriftyEncoder(absoluteEncoderId);
 
         // driveMotor = new CANSparkMax(driveMotorId, MotorType.kBrushless);
-        SparkMax driveMotor = new SparkMax(driveMotorId, MotorType.kBrushless);
-        driveMotor.close();
+        driveMotor = new SparkMax(driveMotorId, MotorType.kBrushless);
         
         // turningMotor = new CANSparkMax(turningMotorId, MotorType.kBrushless);
-        SparkMax turningMotor = new SparkMax(turningMotorId, MotorType.kBrushless);
-        turningMotor.close();
+        turningMotor = new SparkMax(turningMotorId, MotorType.kBrushless);
 
         // driveMotor.restoreFactoryDefaults();
 
@@ -87,7 +83,6 @@ public class SwerveModule {
 
         // absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
 //TODO - limit absolute encoder range to -180 to 180
-
         resetEncoders();
     }
 
