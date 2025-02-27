@@ -90,13 +90,8 @@ public class SwerveSubsystem extends SubsystemBase {
 //PathPlanner Test Code Start
 
     RobotConfig config;
-    config = null;
     try{
       config = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      // Handle exception as needed
-      e.printStackTrace();
-    }
 
         // Configure AutoBuilder last
         AutoBuilder.configure(
@@ -124,6 +119,10 @@ public class SwerveSubsystem extends SubsystemBase {
         },
         this // Reference to this subsystem to set requirements
         );
+    } catch (Exception e) {
+        // Handle exception as needed
+        DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", e.getStackTrace());
+    }
 
 //PathPlanner Test Code End
 
