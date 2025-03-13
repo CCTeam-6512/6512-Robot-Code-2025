@@ -140,7 +140,8 @@ public final class Constants {
         public static final int kDriverSlowTurnButtonIdx=5;
         // Button used to reset the gyro to 0
         public static final int kDriverResetGyroButtonIdx=2;
-
-
+    }
+    public static final class ScoringConstants {
+        public static final int kScoringControllerPort = 1;
     }
 }
