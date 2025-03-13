@@ -1,9 +1,11 @@
 package frc.robot;
 
 import java.util.List;
-
+import frc.robot.commands.*;
+import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -16,23 +18,31 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.Constants.ScoringConstants;
 import frc.robot.commands.SwerveJoystickCmd;
-import frc.robot.subsystems.SwerveSubsystem;
+
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 public class RobotContainer {
 
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+    private final Shooter shooter = new Shooter();
+    private final Arm arm = new Arm();
 
     private final static Joystick driverJoytick = new Joystick(OIConstants.kDriverControllerPort);
+    private final static Joystick xbox = new Joystick(ScoringConstants.kScoringControllerPort);
 
     public RobotContainer() {
+
+        configureButtonBindings();
+
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
                 swerveSubsystem,
                 () -> -driverJoytick.getRawAxis(OIConstants.kDriverYAxis),
@@ -44,8 +54,34 @@ public class RobotContainer {
                 ));
 }
 
+// SendableChooser<Command> chooser = new SendableChooser<>();
+
+final Command ShootPiece = new ParallelCommandGroup(
+    shooter.PrepareShooter(0.5)
+);
+
+final Command AlageIntake = new ParallelCommandGroup(
+    shooter.PrepareShooter(-0.5)
+);
+
+final Command ArmDown = new ParallelCommandGroup(
+    arm.PrepareArm(-0.05)
+);
+
+final Command ArmUp = new ParallelCommandGroup(
+    arm.PrepareArm(0.15)
+);
+
     private void configureButtonBindings() {
         new JoystickButton(driverJoytick, OIConstants.kDriverResetGyroButtonIdx).onTrue(new InstantCommand(() -> swerveSubsystem.zeroHeading()));
+        final JoystickButton outtakeButton = new JoystickButton(xbox, 1);
+        outtakeButton.whileTrue(ShootPiece);
+        final JoystickButton intakeButton = new JoystickButton(xbox, 2);
+        intakeButton.whileTrue(AlageIntake);
+        final JoystickButton armDownButton = new JoystickButton(xbox, 3);
+        armDownButton.whileTrue(ArmDown);
+        final JoystickButton armUpButton = new JoystickButton(xbox, 4);
+        armUpButton.whileTrue(ArmUp);
     }
 
      public Command getAutonomousCommand() {
