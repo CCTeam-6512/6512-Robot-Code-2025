@@ -11,7 +11,7 @@ public final class Constants {
         //The diameter of the wheel on your swerve drive
         public static final double kWheelDiameterMeters = Units.inchesToMeters(3.94); 
         //The gear ratio for an SDS MK4 module with speed ratio of L2
-        public static final double kDriveMotorGearRatio = 1 / 6.75;
+        public static final double kDriveMotorGearRatio = 1 / 5.9;
         //Ratio for an SDS MK4 turning motor
         public static final double kTurningMotorGearRatio = 1 / 12.80;
         public static final double kDriveEncoderRot2Meter = kDriveMotorGearRatio * Math.PI * kWheelDiameterMeters;
@@ -25,9 +25,9 @@ public final class Constants {
     public static final class DriveConstants {
 
         // Distance between right and left wheels
-        public static final double kTrackWidth = Units.inchesToMeters(22);
+        public static final double kTrackWidth = Units.inchesToMeters(25);
         // Distance between front and back wheels
-        public static final double kWheelBase = Units.inchesToMeters(22);
+        public static final double kWheelBase = Units.inchesToMeters(25);
 
 
         // Measured from the center of the robot
@@ -89,7 +89,7 @@ public final class Constants {
         public static final double kBackRightDriveAbsoluteEncoderOffsetRad = Units.degreesToRadians(-84.6 + 180);
 
         // in m/s, based on MK4 L2 speed of 14.5 ft/s
-        public static final double kPhysicalMaxSpeedMetersPerSecond = Units.feetToMeters(14.5);  
+        public static final double kPhysicalMaxSpeedMetersPerSecond = Units.feetToMeters(17.2);  
         // Robot turning speed
         public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 5 * Math.PI;
 
@@ -131,7 +131,7 @@ public final class Constants {
         public static final int kDriverThrottleAxis = 3;
         // Deadband for the controller
         public static final double kRotDeadband = .25; //0.05;
-        public static final double kDriveDeadband = .05;
+        public static final double kDriveDeadband = .25; //0.05;
         // Button used to enable robot orientation driving
         // public static final int kDriverFieldOrientedButtonIdx = 5;
         public static final int kDriverFieldOrientedButtonIdx = 1;
