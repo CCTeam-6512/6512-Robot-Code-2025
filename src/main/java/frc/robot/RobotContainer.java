@@ -65,7 +65,7 @@ final Command AlageIntake = new ParallelCommandGroup(
 );
 
 final Command ArmDown = new ParallelCommandGroup(
-    arm.PrepareArm(-0.05)
+    arm.PrepareArm(-0.1)
 );
 
 final Command ArmUp = new ParallelCommandGroup(
