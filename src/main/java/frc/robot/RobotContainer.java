@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
@@ -35,6 +36,7 @@ public class RobotContainer {
     private final SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
     private final Shooter shooter = new Shooter();
     private final Arm arm = new Arm();
+    private final Climber climber = new Climber();
 
     private final static Joystick driverJoytick = new Joystick(OIConstants.kDriverControllerPort);
     private final static Joystick xbox = new Joystick(ScoringConstants.kScoringControllerPort);
@@ -72,6 +74,25 @@ final Command ArmUp = new ParallelCommandGroup(
     arm.PrepareArm(0.15)
 );
 
+final Command ClimbPrepare = new SequentialCommandGroup(
+    climber.PrepareClimber(-0.75),
+    new WaitCommand(2).andThen(climber.PrepareClimber(0))
+);
+
+final Command ClimbEndgame = new SequentialCommandGroup(
+    climber.PrepareClimber(0.4),
+    new WaitCommand(10).andThen(climber.PrepareClimber(0))
+);
+
+// Temporary commands to test climb motor
+
+// final Command tempClimbF = new ParallelCommandGroup(
+//     climber.PrepareClimber(0.3)
+// );
+// final Command tempClimbB = new ParallelCommandGroup(
+//     climber.PrepareClimber(-0.3)
+// );
+
     private void configureButtonBindings() {
         new JoystickButton(driverJoytick, OIConstants.kDriverResetGyroButtonIdx).onTrue(new InstantCommand(() -> swerveSubsystem.zeroHeading()));
         final JoystickButton outtakeButton = new JoystickButton(xbox, 1);
@@ -82,6 +103,16 @@ final Command ArmUp = new ParallelCommandGroup(
         armDownButton.whileTrue(ArmDown);
         final JoystickButton armUpButton = new JoystickButton(xbox, 4);
         armUpButton.whileTrue(ArmUp);
+        final JoystickButton climbPrepareButton = new JoystickButton(xbox, 5);
+        climbPrepareButton.onTrue(ClimbPrepare);
+        final JoystickButton climbEndgameButton = new JoystickButton(xbox, 6);
+        climbEndgameButton.onTrue(ClimbEndgame);
+
+        // Temporary
+        // final JoystickButton climbPrepareButton = new JoystickButton(xbox, 5);
+        // climbPrepareButton.whileTrue(tempClimbF);
+        // final JoystickButton climbEndgameButton = new JoystickButton(xbox, 6);
+        // climbEndgameButton.whileTrue(tempClimbB);
     }
 
      public Command getAutonomousCommand() {
