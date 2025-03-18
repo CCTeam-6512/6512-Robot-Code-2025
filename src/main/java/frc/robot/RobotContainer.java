@@ -75,23 +75,25 @@ final Command ArmUp = new ParallelCommandGroup(
 );
 
 final Command ClimbPrepare = new SequentialCommandGroup(
-    climber.PrepareClimber(-0.75),
-    new WaitCommand(2).andThen(climber.PrepareClimber(0))
+    new InstantCommand(() -> climber.runClimbMotor(-0.75)),
+    new WaitCommand(3.0),
+    new InstantCommand(() -> climber.climbStop())
+    // new InstantCommand(() -> System.out.println("ClimbPrepare finished"))
 );
 
 final Command ClimbEndgame = new SequentialCommandGroup(
-    climber.PrepareClimber(0.4),
-    new WaitCommand(10).andThen(climber.PrepareClimber(0))
+    new InstantCommand(() -> climber.runClimbMotor(0.5)),
+    new WaitCommand(10),
+    new InstantCommand(() -> climber.climbStop())
 );
 
 // Temporary commands to test climb motor
-
-// final Command tempClimbF = new ParallelCommandGroup(
-//     climber.PrepareClimber(0.3)
-// );
-// final Command tempClimbB = new ParallelCommandGroup(
-//     climber.PrepareClimber(-0.3)
-// );
+final Command tempClimbF = new SequentialCommandGroup(
+    climber.PrepareClimber(-0.5)
+);
+final Command tempClimbB = new ParallelCommandGroup(
+    climber.PrepareClimber(0.5)
+);
 
     private void configureButtonBindings() {
         new JoystickButton(driverJoytick, OIConstants.kDriverResetGyroButtonIdx).onTrue(new InstantCommand(() -> swerveSubsystem.zeroHeading()));
@@ -109,10 +111,10 @@ final Command ClimbEndgame = new SequentialCommandGroup(
         climbEndgameButton.onTrue(ClimbEndgame);
 
         // Temporary
-        // final JoystickButton climbPrepareButton = new JoystickButton(xbox, 5);
-        // climbPrepareButton.whileTrue(tempClimbF);
-        // final JoystickButton climbEndgameButton = new JoystickButton(xbox, 6);
-        // climbEndgameButton.whileTrue(tempClimbB);
+        final JoystickButton tempP = new JoystickButton(xbox, 7);
+        tempP.whileTrue(tempClimbB);
+        final JoystickButton tempE = new JoystickButton(xbox, 8);
+        tempE.whileTrue(tempClimbF);
     }
 
      public Command getAutonomousCommand() {
