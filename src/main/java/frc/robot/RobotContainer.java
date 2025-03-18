@@ -67,11 +67,11 @@ final Command AlageIntake = new ParallelCommandGroup(
 );
 
 final Command ArmDown = new ParallelCommandGroup(
-    arm.PrepareArm(-0.1)
+    arm.PrepareArm(-0.2)
 );
 
 final Command ArmUp = new ParallelCommandGroup(
-    arm.PrepareArm(0.15)
+    arm.PrepareArm(0.2)
 );
 
 final Command ClimbPrepare = new SequentialCommandGroup(
@@ -99,21 +99,21 @@ final Command tempClimbB = new ParallelCommandGroup(
         new JoystickButton(driverJoytick, OIConstants.kDriverResetGyroButtonIdx).onTrue(new InstantCommand(() -> swerveSubsystem.zeroHeading()));
         final JoystickButton outtakeButton = new JoystickButton(xbox, 1);
         outtakeButton.whileTrue(ShootPiece);
-        final JoystickButton intakeButton = new JoystickButton(xbox, 2);
+        final JoystickButton intakeButton = new JoystickButton(xbox, 4);
         intakeButton.whileTrue(AlageIntake);
-        final JoystickButton armDownButton = new JoystickButton(xbox, 3);
+        final JoystickButton armDownButton = new JoystickButton(xbox, 5);
         armDownButton.whileTrue(ArmDown);
-        final JoystickButton armUpButton = new JoystickButton(xbox, 4);
+        final JoystickButton armUpButton = new JoystickButton(xbox, 6);
         armUpButton.whileTrue(ArmUp);
-        final JoystickButton climbPrepareButton = new JoystickButton(xbox, 5);
+        final JoystickButton climbPrepareButton = new JoystickButton(xbox, 7);
         climbPrepareButton.onTrue(ClimbPrepare);
-        final JoystickButton climbEndgameButton = new JoystickButton(xbox, 6);
+        final JoystickButton climbEndgameButton = new JoystickButton(xbox, 8);
         climbEndgameButton.onTrue(ClimbEndgame);
 
         // Temporary
-        final JoystickButton tempP = new JoystickButton(xbox, 7);
+        final JoystickButton tempP = new JoystickButton(xbox, 3);
         tempP.whileTrue(tempClimbB);
-        final JoystickButton tempE = new JoystickButton(xbox, 8);
+        final JoystickButton tempE = new JoystickButton(xbox, 2);
         tempE.whileTrue(tempClimbF);
     }
 
