@@ -74,6 +74,10 @@ final Command ArmUp = new ParallelCommandGroup(
     arm.PrepareArm(0.2)
 );
 
+final Command ArmIdle = new ParallelCommandGroup(
+    arm.PrepareArm(0.05)
+);
+
 final Command ClimbPrepare = new SequentialCommandGroup(
     new InstantCommand(() -> climber.runClimbMotor(-0.75)),
     new WaitCommand(3.0),
@@ -82,7 +86,7 @@ final Command ClimbPrepare = new SequentialCommandGroup(
 );
 
 final Command ClimbEndgame = new SequentialCommandGroup(
-    new InstantCommand(() -> climber.runClimbMotor(0.5)),
+    new InstantCommand(() -> climber.runClimbMotor(0.4)),
     new WaitCommand(10),
     new InstantCommand(() -> climber.climbStop())
 );
@@ -107,6 +111,7 @@ final Command tempClimbB = new ParallelCommandGroup(
         armUpButton.whileTrue(ArmUp);
         final JoystickButton climbPrepareButton = new JoystickButton(xbox, 7);
         climbPrepareButton.onTrue(ClimbPrepare);
+        climbPrepareButton.toggleOnTrue(ArmIdle);
         final JoystickButton climbEndgameButton = new JoystickButton(xbox, 8);
         climbEndgameButton.onTrue(ClimbEndgame);
 
