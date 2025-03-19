@@ -56,10 +56,13 @@ public class SwerveJoystickCmd extends Command {
         
         
         // 1. Get real-time joystick inputs
-        throttleadjusted = throttle.get()*-.25+.75;
-        double xSpeed = xSpdFunction.get()*throttleadjusted;
-        double ySpeed = ySpdFunction.get()*throttleadjusted; 
-        double turningSpeed = turningSpdFunction.get();
+        throttleadjusted = throttle.get() * -0.25 + 0.75;
+        // double xSpeed = applySineInOut(xSpdFunction.get() * throttleadjusted);
+        double xSpeed = xSpdFunction.get() * throttleadjusted;
+        // double ySpeed = applySineInOut(ySpdFunction.get()* throttleadjusted);
+        double ySpeed = ySpdFunction.get() * throttleadjusted;
+        // double turningSpeed = turningSpdFunction.get();
+        double turningSpeed = applySineInOut(turningSpdFunction.get());
 
 
         // 2. Apply deadband
@@ -107,5 +110,11 @@ public class SwerveJoystickCmd extends Command {
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    private double applySineInOut(double input) {
+        double sign = Math.signum(input);
+        input = Math.abs(input);
+        return sign * 0.5 * (1 - Math.cos(Math.PI * input));
     }
 }

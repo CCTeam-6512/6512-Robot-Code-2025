@@ -96,7 +96,7 @@ public final class Constants {
         // If you want to slow down the robot during TeleOp, adjust these values
         public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond;
         public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / 4;  // Slowed down for testing
-        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
+        public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 1;
         public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
 
         //gyro offset in degrees (in case NavX is facing different direction on robot)
@@ -130,7 +130,7 @@ public final class Constants {
         public static final int kDriverRotAxis = 2;
         public static final int kDriverThrottleAxis = 3;
         // Deadband for the controller
-        public static final double kRotDeadband = .25; //0.05;
+        public static final double kRotDeadband = .5; //0.05;
         public static final double kDriveDeadband = .25; //0.05;
         // Button used to enable robot orientation driving
         // public static final int kDriverFieldOrientedButtonIdx = 5;
