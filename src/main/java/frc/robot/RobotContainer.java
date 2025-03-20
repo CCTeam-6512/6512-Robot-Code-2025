@@ -62,6 +62,12 @@ final Command ShootPiece = new ParallelCommandGroup(
     shooter.PrepareShooter(0.5)
 );
 
+final Command autoShoot = new SequentialCommandGroup(
+    new InstantCommand(() -> shooter.runShootMotor(0.5)),
+    new WaitCommand(3),
+    new InstantCommand(() -> shooter.runShootMotor(0))
+);
+
 final Command AlageIntake = new ParallelCommandGroup(
     shooter.PrepareShooter(-0.5)
 );
