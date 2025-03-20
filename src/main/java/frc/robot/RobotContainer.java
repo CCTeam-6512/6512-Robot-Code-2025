@@ -113,11 +113,11 @@ final Command tempClimbB = new ParallelCommandGroup(
         intakeButton.whileTrue(AlageIntake);
         final JoystickButton armDownButton = new JoystickButton(xbox, 5);
         armDownButton.whileTrue(ArmDown);
+        armDownButton.whileFalse(ArmIdle);
         final JoystickButton armUpButton = new JoystickButton(xbox, 6);
         armUpButton.whileTrue(ArmUp);
         final JoystickButton climbPrepareButton = new JoystickButton(xbox, 7);
         climbPrepareButton.onTrue(ClimbPrepare);
-        climbPrepareButton.toggleOnTrue(ArmIdle);
         final JoystickButton climbEndgameButton = new JoystickButton(xbox, 8);
         climbEndgameButton.onTrue(ClimbEndgame);
 
