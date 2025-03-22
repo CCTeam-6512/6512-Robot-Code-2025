@@ -1,10 +1,5 @@
 package frc.robot;
-
-import java.io.IOException;
 import java.util.List;
-
-import org.json.simple.parser.ParseException;
-
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -42,7 +37,6 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
-import com.pathplanner.lib.util.FileVersionException;
 
 public class RobotContainer {
 
@@ -81,9 +75,9 @@ public class RobotContainer {
                 new SequentialCommandGroup(
                     AutoBuilder.followPath(path),
                     new InstantCommand(() -> shooter.runShootMotor(0.4)),
-                    new WaitCommand(0.4),
+                    new WaitCommand(0.35),
                     new InstantCommand(() -> arm.runArmMotor(-0.25)),
-                    new WaitCommand(0.5),
+                    new WaitCommand(0.4),
                     new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0)))
                 ).schedule();
         });
