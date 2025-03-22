@@ -1,6 +1,10 @@
 package frc.robot;
 
+import java.io.IOException;
 import java.util.List;
+
+import org.json.simple.parser.ParseException;
+
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -17,6 +21,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -29,7 +34,12 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.ScoringConstants;
 import frc.robot.commands.SwerveJoystickCmd;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 public class RobotContainer {
 
@@ -41,7 +51,12 @@ public class RobotContainer {
     private final static Joystick driverJoytick = new Joystick(OIConstants.kDriverControllerPort);
     private final static Joystick xbox = new Joystick(ScoringConstants.kScoringControllerPort);
 
+    private final SendableChooser<Command> chooser;
+
     public RobotContainer() {
+
+        NamedCommands.registerCommand("autoShoot", autoShoot);
+        new EventTrigger("Shoot Coral").onTrue(Commands.print("autoShoot"));
 
         configureButtonBindings();
 
@@ -54,22 +69,26 @@ public class RobotContainer {
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverThrottleAxis),
                 () -> driverJoytick.getRawButton(OIConstants.kDriverSlowTurnButtonIdx)
                 ));
+        // SendableChooser<Command> chooser = new SendableChooser<>();
+        chooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Auto Select", chooser);
+        SmartDashboard.putData("Auto Coral", BackShootDown());
+
+        // NamedCommands.registerCommand("Auto Shoot", autoShoot);
 }
 
-// SendableChooser<Command> chooser = new SendableChooser<>();
-
 final Command ShootPiece = new ParallelCommandGroup(
-    shooter.PrepareShooter(0.5)
+    shooter.PrepareShooter(0.4)
 );
 
 final Command autoShoot = new SequentialCommandGroup(
-    new InstantCommand(() -> shooter.runShootMotor(0.5)),
+    new InstantCommand(() -> shooter.runShootMotor(0.4)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.1))),
     new WaitCommand(3),
     new InstantCommand(() -> shooter.runShootMotor(0))
 );
 
 final Command AlageIntake = new ParallelCommandGroup(
-    shooter.PrepareShooter(-0.5)
+    shooter.PrepareShooter(-0.25)
 );
 
 final Command ArmDown = new ParallelCommandGroup(
@@ -81,21 +100,44 @@ final Command ArmUp = new ParallelCommandGroup(
 );
 
 final Command ArmIdle = new ParallelCommandGroup(
-    arm.PrepareArm(0.05)
+    arm.PrepareArm(0.06)
 );
 
 final Command ClimbPrepare = new SequentialCommandGroup(
-    new InstantCommand(() -> climber.runClimbMotor(-0.75)),
-    new WaitCommand(3.0),
+    new InstantCommand(() -> climber.runClimbMotor(-0.75)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.075))),
+    new WaitCommand(2.0),
     new InstantCommand(() -> climber.climbStop())
-    // new InstantCommand(() -> System.out.println("ClimbPrepare finished"))
 );
 
 final Command ClimbEndgame = new SequentialCommandGroup(
-    new InstantCommand(() -> climber.runClimbMotor(0.4)),
+    new InstantCommand(() -> climber.runClimbMotor(0.4)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.075))),
     new WaitCommand(10),
     new InstantCommand(() -> climber.climbStop())
 );
+
+PathPlannerPath pback;
+PathPlannerPath pdown;
+
+// Auto Coral
+final Command BackShootDown() {
+    try {
+    pback = PathPlannerPath.fromPathFile("Coral_Back");
+    pdown = PathPlannerPath.fromPathFile("Coral_Down");
+} catch (Exception e) {
+    // Handle exception as needed
+    DriverStation.reportError("Failure", e.getStackTrace());
+}
+    return new SequentialCommandGroup(
+            AutoBuilder.followPath(pback),
+            new SequentialCommandGroup(
+                new InstantCommand(() -> shooter.runShootMotor(0.4)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.1))),
+                new WaitCommand(3),
+                new InstantCommand(() -> shooter.runShootMotor(0))
+            ),
+            AutoBuilder.followPath(pdown)
+        );
+
+}
 
 // Temporary commands to test climb motor
 final Command tempClimbF = new SequentialCommandGroup(
@@ -180,7 +222,8 @@ final Command tempClimbB = new ParallelCommandGroup(
         //         swerveControllerCommand,
         //         new InstantCommand(() -> swerveSubsystem.stopModules()));
 
-        return new PathPlannerAuto("Test_Auto");
+        return BackShootDown();
+        // return chooser.getSelected();
 }
 
     public static Joystick getDriverJoytick() {
