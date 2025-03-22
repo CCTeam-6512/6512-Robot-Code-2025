@@ -38,7 +38,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FileVersionException;
 
 public class RobotContainer {
@@ -52,8 +55,40 @@ public class RobotContainer {
     private final static Joystick xbox = new Joystick(ScoringConstants.kScoringControllerPort);
 
     private final SendableChooser<Command> chooser;
+    private Command backshootCommand;
 
     public RobotContainer() {
+
+        // Auto
+        backshootCommand = Commands.runOnce(() -> {
+            Pose2d currentPose = swerveSubsystem.getPose();
+
+            Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
+            Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
+            
+            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(startPos, endPos);
+            PathPlannerPath path = new PathPlannerPath(
+                waypoints,
+                new PathConstraints(
+                1.0, 1.0,
+                Units.degreesToRadians(360), Units.degreesToRadians(540)
+        ),
+                null,
+                new GoalEndState(0.0, currentPose.getRotation())
+            );
+                path.preventFlipping = true;
+
+                new SequentialCommandGroup(
+                    AutoBuilder.followPath(path),
+                    new InstantCommand(() -> shooter.runShootMotor(0.4)),
+                    new WaitCommand(0.4),
+                    new InstantCommand(() -> arm.runArmMotor(-0.25)),
+                    new WaitCommand(0.5),
+                    new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0)))
+                ).schedule();
+        });
+
+        SmartDashboard.putData("BackShoot", backshootCommand);
 
         NamedCommands.registerCommand("autoShoot", autoShoot);
         new EventTrigger("Shoot Coral").onTrue(Commands.print("autoShoot"));
@@ -72,13 +107,12 @@ public class RobotContainer {
         // SendableChooser<Command> chooser = new SendableChooser<>();
         chooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Select", chooser);
-        SmartDashboard.putData("Auto Coral", BackShootDown());
 
         // NamedCommands.registerCommand("Auto Shoot", autoShoot);
 }
 
 final Command ShootPiece = new ParallelCommandGroup(
-    shooter.PrepareShooter(0.4)
+    shooter.PrepareShooter(0.3)
 );
 
 final Command autoShoot = new SequentialCommandGroup(
@@ -88,7 +122,7 @@ final Command autoShoot = new SequentialCommandGroup(
 );
 
 final Command AlageIntake = new ParallelCommandGroup(
-    shooter.PrepareShooter(-0.25)
+    shooter.PrepareShooter(-0.4)
 );
 
 final Command ArmDown = new ParallelCommandGroup(
@@ -114,30 +148,6 @@ final Command ClimbEndgame = new SequentialCommandGroup(
     new WaitCommand(10),
     new InstantCommand(() -> climber.climbStop())
 );
-
-PathPlannerPath pback;
-PathPlannerPath pdown;
-
-// Auto Coral
-final Command BackShootDown() {
-    try {
-    pback = PathPlannerPath.fromPathFile("Coral_Back");
-    pdown = PathPlannerPath.fromPathFile("Coral_Down");
-} catch (Exception e) {
-    // Handle exception as needed
-    DriverStation.reportError("Failure", e.getStackTrace());
-}
-    return new SequentialCommandGroup(
-            AutoBuilder.followPath(pback),
-            new SequentialCommandGroup(
-                new InstantCommand(() -> shooter.runShootMotor(0.4)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.1))),
-                new WaitCommand(3),
-                new InstantCommand(() -> shooter.runShootMotor(0))
-            ),
-            AutoBuilder.followPath(pdown)
-        );
-
-}
 
 // Temporary commands to test climb motor
 final Command tempClimbF = new SequentialCommandGroup(
@@ -222,8 +232,9 @@ final Command tempClimbB = new ParallelCommandGroup(
         //         swerveControllerCommand,
         //         new InstantCommand(() -> swerveSubsystem.stopModules()));
 
-        return BackShootDown();
+        // return BackShoot();
         // return chooser.getSelected();
+        return backshootCommand;
 }
 
     public static Joystick getDriverJoytick() {
