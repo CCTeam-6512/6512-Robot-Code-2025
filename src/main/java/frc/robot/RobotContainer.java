@@ -84,9 +84,6 @@ public class RobotContainer {
 
         SmartDashboard.putData("BackShoot", backshootCommand);
 
-        NamedCommands.registerCommand("autoShoot", autoShoot);
-        new EventTrigger("Shoot Coral").onTrue(Commands.print("autoShoot"));
-
         configureButtonBindings();
 
         swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
@@ -98,21 +95,13 @@ public class RobotContainer {
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverThrottleAxis),
                 () -> driverJoytick.getRawButton(OIConstants.kDriverSlowTurnButtonIdx)
                 ));
-        // SendableChooser<Command> chooser = new SendableChooser<>();
+
         chooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Select", chooser);
-
-        // NamedCommands.registerCommand("Auto Shoot", autoShoot);
 }
 
 final Command ShootPiece = new ParallelCommandGroup(
     shooter.PrepareShooter(0.3)
-);
-
-final Command autoShoot = new SequentialCommandGroup(
-    new InstantCommand(() -> shooter.runShootMotor(0.4)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.1))),
-    new WaitCommand(3),
-    new InstantCommand(() -> shooter.runShootMotor(0))
 );
 
 final Command AlageIntake = new ParallelCommandGroup(
@@ -226,7 +215,6 @@ final Command tempClimbB = new ParallelCommandGroup(
         //         swerveControllerCommand,
         //         new InstantCommand(() -> swerveSubsystem.stopModules()));
 
-        // return BackShoot();
         // return chooser.getSelected();
         return backshootCommand;
 }
