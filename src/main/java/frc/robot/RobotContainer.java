@@ -58,13 +58,13 @@ public class RobotContainer {
             Pose2d currentPose = swerveSubsystem.getPose();
 
             Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
-            Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
+            Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(AutoConstants.finalautox, AutoConstants.finalautoy)), new Rotation2d());
             
             List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(startPos, endPos);
             PathPlannerPath path = new PathPlannerPath(
                 waypoints,
                 new PathConstraints(
-                1.0, 1.0,
+                1.5, 1.5,
                 Units.degreesToRadians(360), Units.degreesToRadians(540)
         ),
                 null,
@@ -78,7 +78,11 @@ public class RobotContainer {
                     new WaitCommand(0.35),
                     new InstantCommand(() -> arm.runArmMotor(-0.25)),
                     new WaitCommand(0.4),
-                    new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0)))
+                    new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0))),
+                    new WaitCommand(1.0),
+                    new InstantCommand(() -> arm.runArmMotor(0.25)),
+                    new WaitCommand(0.4),
+                    new InstantCommand(() -> arm.runArmMotor(0))
                 ).schedule();
         });
 
@@ -134,10 +138,10 @@ final Command ClimbEndgame = new SequentialCommandGroup(
 
 // Temporary commands to test climb motor
 final Command tempClimbF = new SequentialCommandGroup(
-    climber.PrepareClimber(-0.5)
+    climber.PrepareClimber(-0.4)
 );
 final Command tempClimbB = new ParallelCommandGroup(
-    climber.PrepareClimber(0.5)
+    climber.PrepareClimber(0.4)
 );
 
     private void configureButtonBindings() {
