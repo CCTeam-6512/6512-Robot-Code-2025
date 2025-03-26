@@ -121,8 +121,8 @@ public final class Constants {
                         kMaxAngularAccelerationRadiansPerSecondSquared);
 
         
-        public static final double finalautox = 6.0;
-        public static final double finalautoy = 0.0;
+        // public static final double finalautox = 6.0;
+        // public static final double finalautoy = 0.0;
     }
 
     public static final class OIConstants {
