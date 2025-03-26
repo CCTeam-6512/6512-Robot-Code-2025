@@ -1,4 +1,5 @@
 package frc.robot;
+import java.util.ArrayList;
 import java.util.List;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
@@ -48,45 +49,23 @@ public class RobotContainer {
     private final static Joystick driverJoytick = new Joystick(OIConstants.kDriverControllerPort);
     private final static Joystick xbox = new Joystick(ScoringConstants.kScoringControllerPort);
 
-    private final SendableChooser<Command> chooser;
-    private Command backshootCommand;
+    // private final SendableChooser<Command> chooser;
+    private final SendableChooser<Integer> chooser = new SendableChooser<>();
+
+    List<Pose2d> autoWaypoints = new ArrayList<>();
+    boolean isShoot;
 
     public RobotContainer() {
 
-        // Auto
-        backshootCommand = Commands.runOnce(() -> {
-            Pose2d currentPose = swerveSubsystem.getPose();
+    chooser.setDefaultOption("Left Coral", 0);
+    chooser.addOption("Center Coral", 1);
+    chooser.addOption("Right Coral", 2);
+    chooser.addOption("Left Back Coral (WIP)", 3);
+    chooser.addOption("Right Back Coral (WIP)", 4);
+    chooser.addOption("Taxi", 5);
+    chooser.addOption("Nothing", 6);
 
-            Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
-            Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(AutoConstants.finalautox, AutoConstants.finalautoy)), new Rotation2d());
-            
-            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(startPos, endPos);
-            PathPlannerPath path = new PathPlannerPath(
-                waypoints,
-                new PathConstraints(
-                1.5, 1.5,
-                Units.degreesToRadians(360), Units.degreesToRadians(540)
-        ),
-                null,
-                new GoalEndState(0.0, currentPose.getRotation())
-            );
-                path.preventFlipping = true;
-
-                new SequentialCommandGroup(
-                    AutoBuilder.followPath(path),
-                    new InstantCommand(() -> shooter.runShootMotor(0.4)),
-                    new WaitCommand(0.35),
-                    new InstantCommand(() -> arm.runArmMotor(-0.25)),
-                    new WaitCommand(0.4),
-                    new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0))),
-                    new WaitCommand(1.0),
-                    new InstantCommand(() -> arm.runArmMotor(0.25)),
-                    new WaitCommand(0.4),
-                    new InstantCommand(() -> arm.runArmMotor(0))
-                ).schedule();
-        });
-
-        SmartDashboard.putData("BackShoot", backshootCommand);
+        SmartDashboard.putData("Auto Mode", chooser);
 
         configureButtonBindings();
 
@@ -99,9 +78,39 @@ public class RobotContainer {
                 () -> driverJoytick.getRawAxis(OIConstants.kDriverThrottleAxis),
                 () -> driverJoytick.getRawButton(OIConstants.kDriverSlowTurnButtonIdx)
                 ));
+}
 
-        chooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData("Auto Select", chooser);
+final boolean getWayPoints(Pose2d currentPose) {
+    int autoMode = chooser.getSelected();
+    autoWaypoints.clear();
+    autoWaypoints.add(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
+
+    switch (autoMode) {
+        case 0, 2:
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0)), new Rotation2d()));
+            return true;
+        case 1:
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d()));
+            return true;
+        case 3:
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 3.0)), new Rotation2d()));
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, 3.0)), new Rotation2d()));
+            return true;
+        case 4:
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, -3.0)), new Rotation2d()));
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, -3.0)), new Rotation2d()));
+            return true;
+        case 5:
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
+            return false;
+        case 6:
+            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
+            return false;
+        default:
+            return true;
+    }
 }
 
 final Command ShootPiece = new ParallelCommandGroup(
@@ -220,7 +229,44 @@ final Command tempClimbB = new ParallelCommandGroup(
         //         new InstantCommand(() -> swerveSubsystem.stopModules()));
 
         // return chooser.getSelected();
-        return backshootCommand;
+
+        Pose2d currentPose = swerveSubsystem.getPose();
+        isShoot = getWayPoints(currentPose);
+
+        List<Waypoint> waypoints = new ArrayList<>();
+        for (int i = 0; i < autoWaypoints.size() - 1; i++) {
+            waypoints.addAll(PathPlannerPath.waypointsFromPoses(autoWaypoints.get(i), autoWaypoints.get(i + 1)));
+        }
+
+        if (waypoints.isEmpty()) {
+            throw new IllegalStateException("No waypoints generated");
+        }
+
+        PathPlannerPath path = new PathPlannerPath(
+            waypoints,
+            new PathConstraints(
+                1.5,
+                1.5,
+                Units.degreesToRadians(360),
+                Units.degreesToRadians(540)
+            ),
+            null,
+            new GoalEndState(0.0, currentPose.getRotation())
+            );
+        path.preventFlipping = true;
+
+        return new SequentialCommandGroup(
+            AutoBuilder.followPath(path),
+            new InstantCommand(() -> shooter.runShootMotor(0.4)),
+            new WaitCommand(0.35),
+            new InstantCommand(() -> arm.runArmMotor(-0.25)),
+            new WaitCommand(0.4),
+            new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0))),
+            new WaitCommand(1.0),
+            new InstantCommand(() -> arm.runArmMotor(0.25)),
+            new WaitCommand(0.4),
+            new InstantCommand(() -> arm.runArmMotor(0))
+        );
 }
 
     public static Joystick getDriverJoytick() {
