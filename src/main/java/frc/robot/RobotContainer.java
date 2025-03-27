@@ -49,11 +49,7 @@ public class RobotContainer {
     private final static Joystick driverJoytick = new Joystick(OIConstants.kDriverControllerPort);
     private final static Joystick xbox = new Joystick(ScoringConstants.kScoringControllerPort);
 
-    // private final SendableChooser<Command> chooser;
     private final SendableChooser<Integer> chooser = new SendableChooser<>();
-
-    List<Pose2d> autoWaypoints = new ArrayList<>();
-    boolean isShoot;
 
     public RobotContainer() {
 
@@ -64,53 +60,76 @@ public class RobotContainer {
     chooser.addOption("Right Back Coral (WIP)", 4);
     chooser.addOption("Taxi", 5);
     chooser.addOption("Nothing", 6);
+    
+    SmartDashboard.putData("Auto Mode", chooser);
 
-        SmartDashboard.putData("Auto Mode", chooser);
+    configureButtonBindings();
 
-        configureButtonBindings();
-
-        swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
-                swerveSubsystem,
-                () -> -driverJoytick.getRawAxis(OIConstants.kDriverYAxis),
-                () -> -driverJoytick.getRawAxis(OIConstants.kDriverXAxis),
-                () -> -driverJoytick.getRawAxis(OIConstants.kDriverRotAxis),
-                () -> !driverJoytick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
-                () -> driverJoytick.getRawAxis(OIConstants.kDriverThrottleAxis),
-                () -> driverJoytick.getRawButton(OIConstants.kDriverSlowTurnButtonIdx)
-                ));
+    swerveSubsystem.setDefaultCommand(new SwerveJoystickCmd(
+        swerveSubsystem,
+        () -> -driverJoytick.getRawAxis(OIConstants.kDriverYAxis),
+        () -> -driverJoytick.getRawAxis(OIConstants.kDriverXAxis),
+        () -> -driverJoytick.getRawAxis(OIConstants.kDriverRotAxis),
+        () -> !driverJoytick.getRawButton(OIConstants.kDriverFieldOrientedButtonIdx),
+        () -> driverJoytick.getRawAxis(OIConstants.kDriverThrottleAxis),
+        () -> driverJoytick.getRawButton(OIConstants.kDriverSlowTurnButtonIdx)
+    ));
 }
 
-final boolean getWayPoints(Pose2d currentPose) {
-    int autoMode = chooser.getSelected();
-    autoWaypoints.clear();
-    autoWaypoints.add(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
+final boolean isShoot(int autoMode) {
+    boolean isShoot;
+    switch (autoMode) {
+        case 0, 2:
+            isShoot = true;
+            break;
+        case 1:
+            isShoot = true;
+            break;
+        case 3:
+            isShoot = true;
+            break;
+        case 4:
+            isShoot = true;
+            break;
+        case 5:
+            isShoot = false;
+            break;
+        case 6:
+            isShoot = false;
+            break;
+        default:
+            isShoot = false;
+            break;
+    }
+    return isShoot;
+}
+
+final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
+    List<Pose2d> awp = new ArrayList<>();
+    awp.clear();
+    awp.add(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
 
     switch (autoMode) {
         case 0, 2:
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0)), new Rotation2d()));
-            return true;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0)), new Rotation2d()));
         case 1:
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d()));
-            return true;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d()));
         case 3:
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 3.0)), new Rotation2d()));
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, 3.0)), new Rotation2d()));
-            return true;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 3.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, 3.0)), new Rotation2d()));
         case 4:
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, -3.0)), new Rotation2d()));
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, -3.0)), new Rotation2d()));
-            return true;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, -3.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, -3.0)), new Rotation2d()));
         case 5:
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
-            return false;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
         case 6:
-            autoWaypoints.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
-            return false;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
         default:
-            return true;
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
     }
+    return awp;
 }
 
 final Command ShootPiece = new ParallelCommandGroup(
@@ -229,9 +248,12 @@ final Command tempClimbB = new ParallelCommandGroup(
         //         new InstantCommand(() -> swerveSubsystem.stopModules()));
 
         // return chooser.getSelected();
-
+        List<Pose2d> autoWaypoints;
         Pose2d currentPose = swerveSubsystem.getPose();
-        isShoot = getWayPoints(currentPose);
+        int autoMode = chooser.getSelected();
+
+        autoWaypoints = getWayPoints(currentPose, autoMode);
+        boolean isShoot = isShoot(autoMode);
 
         List<Waypoint> waypoints = new ArrayList<>();
         for (int i = 0; i < autoWaypoints.size() - 1; i++) {
@@ -254,19 +276,22 @@ final Command tempClimbB = new ParallelCommandGroup(
             new GoalEndState(0.0, currentPose.getRotation())
             );
         path.preventFlipping = true;
-
-        return new SequentialCommandGroup(
-            AutoBuilder.followPath(path),
-            new InstantCommand(() -> shooter.runShootMotor(0.4)),
-            new WaitCommand(0.35),
-            new InstantCommand(() -> arm.runArmMotor(-0.25)),
-            new WaitCommand(0.4),
-            new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0))),
-            new WaitCommand(1.0),
-            new InstantCommand(() -> arm.runArmMotor(0.25)),
-            new WaitCommand(0.4),
-            new InstantCommand(() -> arm.runArmMotor(0))
-        );
+        if (isShoot) {
+            return new SequentialCommandGroup(
+                AutoBuilder.followPath(path),
+                new InstantCommand(() -> shooter.runShootMotor(0.4)),
+                new WaitCommand(0.35),
+                new InstantCommand(() -> arm.runArmMotor(-0.25)),
+                new WaitCommand(0.4),
+                new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0))),
+                new WaitCommand(1.0),
+                new InstantCommand(() -> arm.runArmMotor(0.25)),
+                new WaitCommand(0.4),
+                new InstantCommand(() -> arm.runArmMotor(0))
+            );
+        } else {
+            return AutoBuilder.followPath(path);
+        }
 }
 
     public static Joystick getDriverJoytick() {
