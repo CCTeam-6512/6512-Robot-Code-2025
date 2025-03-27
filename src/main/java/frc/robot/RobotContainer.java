@@ -56,8 +56,8 @@ public class RobotContainer {
     chooser.setDefaultOption("Left Coral", 0);
     chooser.addOption("Center Coral", 1);
     chooser.addOption("Right Coral", 2);
-    chooser.addOption("Left Back Coral (WIP)", 3);
-    chooser.addOption("Right Back Coral (WIP)", 4);
+    chooser.addOption("Right Back Coral", 3);
+    chooser.addOption("Left Back Coral", 4);
     chooser.addOption("Taxi", 5);
     chooser.addOption("Nothing", 6);
     
@@ -76,25 +76,13 @@ public class RobotContainer {
     ));
 }
 
-final boolean isShoot(int autoMode) {
+final boolean getisShoot(int autoMode) {
     boolean isShoot;
     switch (autoMode) {
-        case 0, 2:
+        case 1, 2, 3, 4:
             isShoot = true;
             break;
-        case 1:
-            isShoot = true;
-            break;
-        case 3:
-            isShoot = true;
-            break;
-        case 4:
-            isShoot = true;
-            break;
-        case 5:
-            isShoot = false;
-            break;
-        case 6:
+        case 5, 6:
             isShoot = false;
             break;
         default:
@@ -112,22 +100,26 @@ final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
     switch (autoMode) {
         case 0, 2:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0)), new Rotation2d()));
-        case 1:
+            break;
+        case 1,5:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d()));
+            break;
         case 3:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 3.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, 3.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, 0.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, 3.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-4.0, 3.0)), new Rotation2d()));
+            break;
         case 4:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, -3.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(4.0, -3.0)), new Rotation2d()));
-        case 5:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, 0.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, -3.0)), new Rotation2d()));
+            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-4.0, -3.0)), new Rotation2d()));
+            break;
         case 6:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
+            break;
         default:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
+            break;
     }
     return awp;
 }
@@ -253,12 +245,9 @@ final Command tempClimbB = new ParallelCommandGroup(
         int autoMode = chooser.getSelected();
 
         autoWaypoints = getWayPoints(currentPose, autoMode);
-        boolean isShoot = isShoot(autoMode);
+        boolean isShoot = getisShoot(autoMode);
 
-        List<Waypoint> waypoints = new ArrayList<>();
-        for (int i = 0; i < autoWaypoints.size() - 1; i++) {
-            waypoints.addAll(PathPlannerPath.waypointsFromPoses(autoWaypoints.get(i), autoWaypoints.get(i + 1)));
-        }
+        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(autoWaypoints);
 
         if (waypoints.isEmpty()) {
             throw new IllegalStateException("No waypoints generated");
@@ -267,8 +256,8 @@ final Command tempClimbB = new ParallelCommandGroup(
         PathPlannerPath path = new PathPlannerPath(
             waypoints,
             new PathConstraints(
-                1.5,
-                1.5,
+                1.25,
+                1.25,
                 Units.degreesToRadians(360),
                 Units.degreesToRadians(540)
             ),
