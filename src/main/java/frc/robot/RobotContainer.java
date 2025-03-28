@@ -79,11 +79,8 @@ public class RobotContainer {
 final boolean getisShoot(int autoMode) {
     boolean isShoot;
     switch (autoMode) {
-        case 1, 2, 3, 4:
+        case 0, 1, 2, 3, 4:
             isShoot = true;
-            break;
-        case 5, 6:
-            isShoot = false;
             break;
         default:
             isShoot = false;
@@ -101,7 +98,7 @@ final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
         case 0, 2:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0)), new Rotation2d()));
             break;
-        case 1,5:
+        case 1, 5:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d()));
             break;
         case 3:
@@ -114,9 +111,6 @@ final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, -3.0)), new Rotation2d()));
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-4.0, -3.0)), new Rotation2d()));
             break;
-        case 6:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
-            break;
         default:
             awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
             break;
@@ -125,7 +119,7 @@ final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
 }
 
 final Command ShootPiece = new ParallelCommandGroup(
-    shooter.PrepareShooter(0.3)
+    shooter.PrepareShooter(0.4)
 );
 
 final Command AlageIntake = new ParallelCommandGroup(
