@@ -1,5 +1,6 @@
 package frc.robot;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
@@ -91,29 +92,33 @@ final boolean getisShoot(int autoMode) {
 
 final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
     List<Pose2d> awp = new ArrayList<>();
-    awp.clear();
-    awp.add(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
+    ArrayList<ArrayList<Double>> wpXY = new ArrayList<>();
 
     switch (autoMode) {
         case 0, 2:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(6.0, 0)), new Rotation2d()));
+            wpXY.add(new ArrayList<>(Arrays.asList(6.0,0.0)));
             break;
         case 1, 5:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d()));
+            wpXY.add(new ArrayList<>(Arrays.asList(2.0,0.0)));
             break;
         case 3:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, 0.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, 3.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-4.0, 3.0)), new Rotation2d()));
+            wpXY.add(new ArrayList<>(Arrays.asList(-6.0,0.0)));
+            wpXY.add(new ArrayList<>(Arrays.asList(-6.0,3.0)));
+            wpXY.add(new ArrayList<>(Arrays.asList(-4.0,3.0)));
             break;
         case 4:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, 0.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-6.0, -3.0)), new Rotation2d()));
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(-4.0, -3.0)), new Rotation2d()));
+            wpXY.add(new ArrayList<>(Arrays.asList(-6.0,0.0)));
+            wpXY.add(new ArrayList<>(Arrays.asList(-6.0,-3.0)));
+            wpXY.add(new ArrayList<>(Arrays.asList(-4.0,-3.0)));
             break;
         default:
-            awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(0.0, 0.0)), new Rotation2d()));
+            wpXY.add(new ArrayList<>(Arrays.asList(0.0,0.0)));
             break;
+    }
+    awp.clear();
+    awp.add(new Pose2d(currentPose.getTranslation(), new Rotation2d()));
+    for (int i = 0; i < wpXY.size(); i++) {
+        awp.add(new Pose2d(currentPose.getTranslation().plus(new Translation2d(wpXY.get(i).get(0),wpXY.get(i).get(1))), new Rotation2d()));
     }
     return awp;
 }
@@ -140,7 +145,7 @@ final Command ArmIdle = new ParallelCommandGroup(
 
 final Command ClimbPrepare = new SequentialCommandGroup(
     new InstantCommand(() -> climber.runClimbMotor(-0.75)).raceWith(new InstantCommand(() -> arm.runArmMotor(0.075))),
-    new WaitCommand(2.0),
+    new WaitCommand(2.25),
     new InstantCommand(() -> climber.climbStop())
 );
 
@@ -250,8 +255,8 @@ final Command tempClimbB = new ParallelCommandGroup(
         PathPlannerPath path = new PathPlannerPath(
             waypoints,
             new PathConstraints(
-                1.25,
-                1.25,
+                1.5,
+                1.5,
                 Units.degreesToRadians(360),
                 Units.degreesToRadians(540)
             ),
