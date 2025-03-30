@@ -62,6 +62,7 @@ public class RobotContainer {
     chooser.addOption("Taxi", 5);
     chooser.addOption("Nothing", 6);
     
+    SmartDashboard.putString("Auto Mode:", "Filler Text");
     SmartDashboard.putData("Auto Mode", chooser);
 
     configureButtonBindings();
@@ -99,7 +100,7 @@ final List<Pose2d> getWayPoints(Pose2d currentPose, int autoMode) {
             wpXY.add(new ArrayList<>(Arrays.asList(6.0,0.0)));
             break;
         case 1, 5:
-            wpXY.add(new ArrayList<>(Arrays.asList(2.0,0.0)));
+            wpXY.add(new ArrayList<>(Arrays.asList(2.5,0.0)));
             break;
         case 3:
             wpXY.add(new ArrayList<>(Arrays.asList(-6.0,0.0)));
@@ -274,7 +275,7 @@ final Command tempClimbB = new ParallelCommandGroup(
                 new InstantCommand(() -> shooter.runShootMotor(0)).raceWith(new InstantCommand(() -> arm.runArmMotor(0))),
                 new WaitCommand(1.0),
                 new InstantCommand(() -> arm.runArmMotor(0.25)),
-                new WaitCommand(0.4),
+                new WaitCommand(0.5),
                 new InstantCommand(() -> arm.runArmMotor(0))
             );
         } else {
