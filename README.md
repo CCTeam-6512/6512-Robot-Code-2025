@@ -14,7 +14,6 @@ An arm moves up and down with a range of around 90 degrees, sticking outside the
 - Work on more advanced stuff like kinematics and odometry for smoother driving
 - Work on autonomous using PathPlanner/PathWeaver and figure out why it is not working as intended
 - Work on creating more advanced autonomous commands to perform more tasks
-- Finish this README
 
 ## Created with help from these projects:
 - 4534's 2023 Swerve Code - Thanks to our mentor team, the Wired Wizards, for helping us get our swerve drivetrain up and working, along with providing their swerve code.
