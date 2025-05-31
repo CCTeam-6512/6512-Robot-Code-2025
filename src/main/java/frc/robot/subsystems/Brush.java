@@ -1,3 +1,7 @@
+// It might be simpler to run all brushed motors through a single subsystem
+// Pass in the motor ID to the constructor
+// Example: new Brush(10) for motor ID 10
+// Only do this if the code is the same
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
